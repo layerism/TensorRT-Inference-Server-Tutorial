@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MODEL_NAME=face-det
+MODEL_NAME=detection
 
 rm -rf ../../model_repository/${MODEL_NAME}*
 mkdir -p ./model_repository/${MODEL_NAME}

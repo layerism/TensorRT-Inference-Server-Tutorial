@@ -58,7 +58,7 @@ def tf2graphdef(
         for i, output in enumerate(outputs_def):
             name = output.get("name", None)
             shape = output.get("dims", None)
-            dtype = DTYPE[output.get("data_type", None)]
+            dtype = TF_DTYPE[output.get("data_type", None)]
             output = tf.identity(dummy_outputs[i], name=name)
             output_names.append(name)
 

@@ -32,7 +32,7 @@ setup(
         "opencv-python>=3.4.1",
         "Pillow>=6.0.0",
         "protobuf>=3.8.0",
-        "onnx>=1.5.0",
+        "onnx>=1.6.0",
         "pycuda>=2018.1.2",
         "tensorflow-gpu>=1.15.0"
     ],

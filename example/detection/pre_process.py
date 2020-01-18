@@ -3,8 +3,12 @@ import os
 import numpy as np
 import tensorflow as tf
 
+HEATMAP_SIZE = 128
+MEAN = (0.408, 0.447, 0.470)
+STD = (0.289, 0.274, 0.278)
 
-def backward_affine_transform(raw_shape, dst_shape=(128, 128)):
+
+def backward_affine_transform(raw_shape, dst_shape=(HEATMAP_SIZE, HEATMAP_SIZE)):
     """
     shape:
         dst(3, 3) x T(3, 2) = src(3, 2)
@@ -63,7 +67,7 @@ def _resize_and_pad(image, size=512):
         return image
 
 
-def _normalize(tensor, mean=(0.408, 0.447, 0.470), std=(0.289, 0.274, 0.278)):
+def _normalize(tensor, mean=MEAN, std=STD):
     with tf.name_scope("normalize") as scope:
         tensor = tf.cast(tensor, tf.float32)
         tensor = tensor / 255.0

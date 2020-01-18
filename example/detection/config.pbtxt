@@ -12,17 +12,17 @@ output [
   {
     name: "score"
     data_type: TYPE_FP32
-    dims: [ 1, -1 ]
+    dims: [ 1, 100 ]
   },
   {
     name: "category"
     data_type: TYPE_INT32
-    dims: [ 1, -1 ]
+    dims: [ 1, 100 ]
   },
   {
     name: "bbox"
     data_type: TYPE_FP32
-    dims: [ 1, -1, 4 ]
+    dims: [ 1, 100, 4 ]
   }
 ]
 ensemble_scheduling {

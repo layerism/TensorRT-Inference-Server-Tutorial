@@ -2,9 +2,13 @@
 
 # TensorRT Inference Server 初学者教程
 
-通过一个简单易懂，方便快捷的教程，部署一套完整的深度学习模型，一定程度可以满足许多工业界需求。
+通过一个简单易懂，方便快捷的教程，部署一套完整的深度学习模型，一定程度可以满足部分工业界需求。
 
-这里采取的例子是检测 centernet 的部署，SSD，YOLO 系列都比较古老了，虽然教程也比较多，但是都不够简洁。
+对于不需要自己重写服务接口的团队来说，使用 tesorrt inference sever 作为服务，也足够了。
+
+这里采取的例子是单目标检测的 centernet 的部署，SSD，YOLO 系列都比较古老了，虽然教程也比较多，但是都不够简洁。
+
+本教程使用的检测模型暂时不提供  model zoo
 
 
 
@@ -36,7 +40,7 @@ pip install tensorrtserver-1.9.0-py2.py3-none-linux_x86_64.whl
 conda install openssl=1.1.1
 ```
 
-对于 c++ 来说，把 client 端的 SDK 抠下来找个地方编译自己的文件即可，这里比较烦，不做例子。
+对于 c++ 来说，把 client 端的 SDK 抠下来找个地方编译自己的文件即可，这里比较烦，暂时不做例子。
 
 
 

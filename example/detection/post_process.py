@@ -7,6 +7,8 @@ from torch.nn import functional
 from torchvision import transforms
 
 TOP_K = 100
+HEATMAP_SIZE = 128
+N_CATEGORY = 1
 
 
 def pixel_nms(heatmap, ksize=3, cutoff=1e-7):
@@ -21,7 +23,7 @@ def pixel_nms(heatmap, ksize=3, cutoff=1e-7):
     return score
 
 
-def get_coord(score, topk=100):
+def get_coord(score, topk=TOP_K):
     # score.shape = [N, C, 128, 128]
     # score, category, indices = [N, topk]
     score = score.flatten(2, 3)  # [N, C, 128 * 128]
@@ -80,19 +82,19 @@ def cvt_to_coord(indices, bbox_wh, shift_wh, trans_mat, shape):
     return bbox
 
 
-def postprocess(inputs, topk=TOP_K):
+def postprocess(inputs):
     heatmap, bbox_wh, center_shift, trans_mat = inputs
     score = pixel_nms(heatmap)
-    score, category, indices = get_coord(score, topk=topk)
+    score, category, indices = get_coord(score)
     bbox_wh = get_bbox_wh(bbox_wh, indices)
     shift_wh = get_center_shift(center_shift, indices)
 
     shape = torch.tensor(heatmap.shape, dtype=torch.long)
     bbox = cvt_to_coord(indices, bbox_wh, shift_wh, trans_mat, shape)
 
-    score = score.reshape(1, topk)
-    category = category.reshape(1, topk)
-    bbox = bbox.reshape(1, topk, 4)
+    score = score.reshape(1, TOP_K)
+    category = category.reshape(1, TOP_K)
+    bbox = bbox.reshape(1, TOP_K, 4)
 
     return score, category, bbox
 
@@ -103,17 +105,17 @@ if __name__ == "__main__":
     inputs_def = [
         {
             "name": "heatmap",
-            "dims": [1, 1, 128, 128],
+            "dims": [1, N_CATEGORY, HEATMAP_SIZE, HEATMAP_SIZE],
             "data_type": "TYPE_FP32"
         },
         {
             "name": "bbox_wh",
-            "dims": [1, 2, 128, 128],
+            "dims": [1, 2, HEATMAP_SIZE, HEATMAP_SIZE],
             "data_type": "TYPE_FP32"
         },
         {
             "name": "center_shift",
-            "dims": [1, 2, 128, 128],
+            "dims": [1, 2, HEATMAP_SIZE, HEATMAP_SIZE],
             "data_type": "TYPE_FP32"
         },
         {
