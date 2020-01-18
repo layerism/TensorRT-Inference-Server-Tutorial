@@ -1,0 +1,99 @@
+name: "detection"
+platform: "ensemble"
+max_batch_size: 0
+input [
+  {
+    name: "raw_image"
+    data_type: TYPE_STRING
+    dims: [ 1 ]
+  }
+]
+output [
+  {
+    name: "score"
+    data_type: TYPE_FP32
+    dims: [ 1, -1 ]
+  },
+  {
+    name: "category"
+    data_type: TYPE_INT32
+    dims: [ 1, -1 ]
+  },
+  {
+    name: "bbox"
+    data_type: TYPE_FP32
+    dims: [ 1, -1, 4 ]
+  }
+]
+ensemble_scheduling {
+  step [
+    {
+      model_name: "detection-preprocess"
+      model_version: 1
+      input_map {
+        key: "raw_image"
+        value: "raw_image"
+      }
+      output_map {
+        key: "process_img"
+        value: "process_img"
+      }
+      output_map {
+        key: "affine_trans_mat"
+        value: "affine_trans_mat"
+      }
+    },
+    {
+      model_name: "detection-network"
+      model_version: 1
+      input_map {
+        key: "process_img"
+        value: "process_img"
+      }
+      output_map {
+        key: "heatmap"
+        value: "heatmap"
+      }
+      output_map {
+        key: "bbox_wh"
+        value: "bbox_wh"
+      }
+      output_map {
+        key: "center_shift"
+        value: "center_shift"
+      }
+    },
+    {
+      model_name: "detection-postprocess"
+      model_version: 1
+      input_map {
+        key: "heatmap"
+        value: "heatmap"
+      }
+      input_map {
+        key: "bbox_wh"
+        value: "bbox_wh"
+      }
+      input_map {
+        key: "center_shift"
+        value: "center_shift"
+      }
+      input_map {
+        key: "affine_trans_mat"
+        value: "affine_trans_mat"
+      }
+      output_map {
+        key: "score"
+        value: "score"
+      }
+      output_map {
+        key: "category"
+        value: "category"
+      }
+      output_map {
+        key: "bbox"
+        value: "bbox"
+      }
+    }
+  ]
+}
