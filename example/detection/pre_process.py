@@ -119,5 +119,5 @@ if __name__ == "__main__":
         instances=4,
         gpus=[0, 1, 2, 3],
         version=1,
-        export_path="./model_repository"
+        export_path="../../model_repository"
     )

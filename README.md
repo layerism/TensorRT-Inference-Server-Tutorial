@@ -73,13 +73,28 @@ python setup.py install
 
 
 
-## 安装教程自带的工具
+## 开始教程
+
+安装教程内的转换脚本和客户端：
 
 ```sh
 cd backend
 python setup.py install
 cd client_py
 python setup.py install
+```
+
+执行教程的 example，这个 example 会生成完整的 model-repo，剩下交给 tensorRT inference server 
+
+```sh
+cd example/detection
+./convert.sh
+```
+
+启动服务：
+
+```sh
+./start.sh
 ```
 
 
@@ -101,6 +116,7 @@ runner = client.Inference(
 	model_version="1"
 )
 results = runner.run(input={"raw_image": raw_image})
+print(results)
 ```
 
 异步非阻塞调度举例：
@@ -111,7 +127,7 @@ import numpy as np
 
 runner = client.Inference(
 	url="xx.xxx.xxx.xxx:7001", # grpc
-	model_name="face-det",
+	model_name="detection",
 	model_version="1"
 )
 

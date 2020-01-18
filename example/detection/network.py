@@ -41,13 +41,13 @@ if __name__ == "__main__":
         }
     ]
 
-    # from pre_process import preprocess
-    # import tensorflow as tf
-    # sess = tf.Session()
-    # preprocess_fn = lambda x: sess.run(preprocess([x]))[0]
-    #
-    # stream = trt_backend.ImageBatchStream("./calibrator_files", 5, preprocess_fn)
-    # int8_calibrator = trt_backend.IInt8MinMaxCalibrator(inputs_def, stream)
+    from pre_process import preprocess
+    import tensorflow as tf
+    sess = tf.Session()
+    preprocess_fn = lambda x: sess.run(preprocess([x]))[0]
+
+    stream = trt_backend.ImageBatchStream("./calibrator_files", 5, preprocess_fn)
+    int8_calibrator = trt_backend.IInt8EntropyCalibrator2(inputs_def, stream)
 
     trt_backend.torch2trt(
         computation_graph=model,
@@ -58,8 +58,8 @@ if __name__ == "__main__":
         instances=4,
         gpus=[0, 1, 2, 3],
         version=1,
-        export_path="./model_repository",
-        int8_calibrator=None
+        export_path="../../model_repository",
+        int8_calibrator=int8_calibrator
     )
 
     # onnx_backend.torch2onnx(
@@ -71,5 +71,5 @@ if __name__ == "__main__":
     #     instances=8,
     #     gpus=[2, 3],
     #     version=1,
-    #     export_path="./model_repository"
+    #     export_path="../../model_repository"
     # )

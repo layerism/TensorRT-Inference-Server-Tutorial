@@ -27,6 +27,15 @@ TENSOR = """\
   {{
     name: "{name}",
     dims: {dims},
+    data_type: {data_type}
+  }}\
+"""
+
+
+TENSOR_RESHAPE = """\
+  {{
+    name: "{name}",
+    dims: {dims},
     data_type: {data_type},
     reshape: {{ shape: {reshape} }}
   }}\
@@ -50,7 +59,7 @@ instance_group [
 """
 
 
-def data_def_dumps(node_def):
+def data_def_dumps(node_def, remove_batch_dim=False):
     data = []
     for node in node_def:
         name = node.get("name", None)
@@ -58,12 +67,19 @@ def data_def_dumps(node_def):
         data_type = node.get("data_type", "TYPE_FP32")
         #format = node.get("format", "FORMAT_NONE")
         reshape = node.get("reshape", dims)
-        format_output = TENSOR.format(
-            name=name,
-            dims=dims,
-            data_type=data_type,
-            reshape=dims[1:]
-        )
+        if remove_batch_dim is False:
+            format_output = TENSOR.format(
+                name=name,
+                dims=dims,
+                data_type=data_type
+            )
+        else:
+            format_output = TENSOR_RESHAPE.format(
+                name=name,
+                dims=dims,
+                data_type=data_type,
+                reshape=dims[1:]
+            )
         data.append(format_output)
 
     data = "[\n" + ",\n".join(data) + "\n]"
@@ -82,13 +98,15 @@ def generate_trtis_config(
     verbose=True
 ):
 
+    remove_batch_dim = True if platform is "tensorrt_plan" else False
+
     config_path = "{}/config.pbtxt".format(export_path)
     config_content = CONFIG_PBTXT.format(
         name=str(graph_name),
         platform=str(platform),
         max_batch_size=max_batch_size,
-        input=data_def_dumps(inputs_def),
-        output=data_def_dumps(outputs_def),
+        input=data_def_dumps(inputs_def, remove_batch_dim),
+        output=data_def_dumps(outputs_def, remove_batch_dim),
         instances=instances,
         gpus=gpus
     )
