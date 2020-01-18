@@ -5,7 +5,7 @@ import tensorflow as tf
 
 HEATMAP_SIZE = 128
 MEAN = (0.408, 0.447, 0.470)
-STD = (0.289, 0.274, 0.278)
+STD = (0.274, 0.274, 0.274)
 
 
 def backward_affine_transform(raw_shape, dst_shape=(HEATMAP_SIZE, HEATMAP_SIZE)):
