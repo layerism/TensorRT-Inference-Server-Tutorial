@@ -102,10 +102,10 @@ pip install tensorrtserver-1.9.0-py2.py3-none-linux_x86_64.whl
 
 安装各种 backend，用于生成如下转换格式： 
 
--   onnx
--   tensorRT
--   tensorflow
--   pytorch
+-   onnx=1.6.0
+-   tensorRT=6.0.1.5
+-   tensorflow=1.15.0
+-   pytorch=1.3.0
 
 安装 TensorRT-6.0.1.5，请参考 https://docs.nvidia.com/deeplearning/sdk/tensorrt-install-guide/index.html
 
@@ -118,18 +118,11 @@ pip install torch==1.3.0 torchvision==0.4.1
 pip install opencv-python pillow pycuda
 ```
 
-安装转换工具：
-
-```sh
-cd backend
-python setup.py install
-```
-
 
 
 ## 开始教程
 
-安装教程内的转换脚本和客户端接口：
+安装教程内的转换脚本和客户端接口，这个接口不仅能够完成转换，还能生成 tensorRT Inference Server 要求的 config 文件，所以，也适用于其它模型的转换，唯一问题在于 onnx 到 tensorRT 仍然没办法做百分百无缝转换
 
 ```sh
 cd backend
@@ -138,17 +131,56 @@ cd client_py
 python setup.py install
 ```
 
-执行教程的 example，这个 example 会生成完整的 model-repo，剩下交给 tensorRT inference server 
+执行教程的 example，这个 example 会生成完整的 model_repository，剩下交给 tensorRT inference server 
 
 ```sh
 cd example/detection
 ./convert.sh
 ```
 
+model_repository 的文件结构如下：
+
+```sh
+./model_repository/
+├── detection
+│   ├── 1
+│   └── config.pbtxt
+├── detection-network
+│   ├── 1
+│   │   └── model.plan
+│   └── config.pbtxt
+├── detection-postprocess
+│   ├── 1
+│   │   └── model.onnx
+│   └── config.pbtxt
+└── detection-preprocess
+    ├── 1
+    │   └── model.graphdef
+    └── config.pbtxt
+```
+
 启动服务：
 
 ```sh
-./start.sh
+#!/bin/bash
+HTTP_PORT=7000
+GRPC_PORT=7001
+METRIC_PORT=7002
+DOCKER_IMAGE=nvcr.io/nvidia/tensorrtserver:19.12-py3
+MODEL_REPOSITORY=./model_repository
+
+docker run --rm \
+    --runtime nvidia \
+    --name trt_server \
+    --shm-size=4g \
+    --ulimit memlock=-1 \
+    --ulimit stack=67108864 \
+    -p${HTTP_PORT}:8000 \
+    -p${GRPC_PORT}:8001 \
+    -p${METRIC_PORT}:8002 \
+    -v${MODEL_REPOSITORY}/:/models \
+    ${DOCKER_IMAGE} \
+    trtserver --model-repository=/models
 ```
 
 使用 client：
