@@ -9,10 +9,6 @@ import tensorrtserver.api.model_config_pb2 as model_config
 import tensorrtserver.cuda_shared_memory as cudashm
 from tensorrtserver.api import *
 
-if sys.version_info >= (3, 0):
-    import queue
-else:
-    import Queue as queue
 
 DTYPE = {2: np.uint8, 11: np.float32, 8: np.int32}
 

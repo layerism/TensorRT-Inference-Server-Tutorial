@@ -1,19 +1,42 @@
 
 
-# TensorRT Inference Server 部署教程
+# TensorRT Inference Server 初学者教程
+
+通过一个简单易懂，方便快捷的教程，部署一套完整的深度学习模型，一定程度可以满足许多工业界需求。
+
+这里采取的例子是检测 centernet 的部署，SSD，YOLO 系列都比较古老了，虽然教程也比较多，但是都不够简洁。
 
 
 
-## Pull 服务的镜像
+## 服务端搭建
 
 ```sh
 docker pull nvcr.io/nvidia/tensorrtserver:19.12-py3
-docker pull nvcr.io/nvidia/tensorrtserver:19.12-py3-clientsdk
 ```
 
 注意，这里面需要 nvidia 驱动版本大于 418 才行，Tesla 系列显卡可以稍微降低要求，cuda 版本要求是 10.1，详细配置参考：
 
 https://docs.nvidia.com/deeplearning/sdk/inference-release-notes/rel_19-12.html#rel_19-12
+
+
+
+## 客户端搭建
+
+```sh
+docker pull nvcr.io/nvidia/tensorrtserver:19.12-py3-clientsdk
+```
+
+理论上来说，grpc 接口不依赖系统环境，没必要靠 docker 启动客户端，docker run 上述镜像以后，把 /workspace/install/python/tensorrtserver-1.9.0-py2.py3-none-linux_x86_64.whl 的安装文件取出来，直接在任意一台机器 pip install 便可
+
+```sh
+# docker run --rm nvcr.io/nvidia/tensorrtserver:19.12-py3-clientsdk /bin/bash 
+# copy `/workspace/install/python/tensorrtserver-1.9.0-py2.py3-none-linux_x86_64.whl` file to any linux machine
+# run the following commad
+pip install tensorrtserver-1.9.0-py2.py3-none-linux_x86_64.whl
+conda install openssl=1.1.1
+```
+
+对于 c++ 来说，把 client 端的 SDK 抠下来找个地方编译自己的文件即可，这里比较烦，不做例子。
 
 
 
@@ -37,25 +60,27 @@ pip install torch==1.3.0 torchvision==0.4.1
 pip install opencv-python pillow pycuda
 ```
 
-
-
-## python 客户端使用
-
-安装必要依赖：
+安装转换工具：
 
 ```sh
-curl http://ai-zzzc.s3.360.cn/package/tensorrtserver-1.9.0-py2.py3-none-linux_x86_64.whl --output ./tmp/tensorrtserver-1.9.0.whl
-pip install ./tensorrtserver-1.9.0.whl
-conda install openssl=1.1.1
-rm -rf ./tmp/tensorrtserver-1.9.0.whl
+cd backend
+python setup.py install
 ```
 
-安装 trt_client 客户端：
+
+
+## 安装教程自带的工具
 
 ```sh
+cd backend
+python setup.py install
 cd client_py
 python setup.py install
 ```
+
+
+
+## python 客户端使用
 
 单步调度举例：
 
@@ -67,8 +92,8 @@ raw_image = open("./xxx.jpg", "rb").read()
 raw_image = np.array([raw_image], dtype=bytes)
 
 runner = client.Inference(
-	url="10.160.168.155:7001",
-	model_name="face-det",
+	url="xx.xxx.xxx.xxx:7001", # grpc
+	model_name="detection",
 	model_version="1"
 )
 results = runner.run(input={"raw_image": raw_image})
@@ -79,24 +104,21 @@ results = runner.run(input={"raw_image": raw_image})
 ```python
 from trt_client import client
 import numpy as np
-import multiprocessing as mp
 
 runner = client.Inference(
-	url="10.160.168.155:7001",
+	url="xx.xxx.xxx.xxx:7001", # grpc
 	model_name="face-det",
 	model_version="1"
 )
 
-queue = mp.Queue()
 for i in range(10):
     raw_image = open("./{}.jpg".format(i), "rb").read()
 	raw_image = np.array([raw_image], dtype=bytes)
 	results = runner.async_run(
         input={"raw_image": raw_image}, 
-        input_id="image_{}".format(i), 
-        result_queue=queue
+        input_id="image_{}".format(i)
    	)
 for i in range(10):
-    input_id, results = runner.get(queue, block=True)
+    input_id, results = runner.get(block=True)
 ```
 
