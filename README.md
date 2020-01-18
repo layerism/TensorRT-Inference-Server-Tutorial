@@ -15,7 +15,32 @@
 如果在 p40 GPU 上部署，消耗时间最多的，是服务网络层面的通信，和把请求通过轮训方式发送到 GPU 上，本身模型计算是非常快的。
 
 1.  一张卡上启动 16 个实例，占用显存为 2G 左右，单个客户端做异步请求，能够到 100 左右 QPS
-2.  4 张卡，每张卡启动 16 个实例，单个客户端做异步请求，能够到 400 左右 QPS
+2.  4 张卡，每张卡启动 16 个实例，占用显存为 2G 左右，单个客户端做异步请求，能够到 400-500 左右 QPS
+
+#### 文件结构与说明
+
+```sh
+./
+├── README.md
+├── backend # 转换库
+│   ├── VERSION.txt
+│   ├── setup.cfg
+│   ├── setup.py
+│   └── trtis
+├── client_py # python 客户端工具
+│   ├── VERSION.txt
+│   ├── setup.cfg
+│   ├── setup.py
+│   └── trt_client
+├── example
+│   ├── detection # 检测前后预处理，网络，客户端等
+│   └── test-data # 数据
+├── install.sh
+├── model_repository
+└── start.sh
+```
+
+
 
 
 

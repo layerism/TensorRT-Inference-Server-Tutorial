@@ -16,7 +16,7 @@ from tqdm import tqdm
 from trt_client import client
 
 
-def test_async_speed(runner, data, N=128, loop=10):
+def test_async_speed(runner, data, N=2048, loop=10):
     for i in range(loop):
         t0 = time.time()
         for i in range(N):
@@ -33,7 +33,7 @@ def test_async_speed(runner, data, N=128, loop=10):
         print("TIME/PER-IMG: {:5.3f}(ms)".format((time.time() - t0) / N * 1000.0))
 
 
-def test_speed(runner, data, N=128, loop=10):
+def test_speed(runner, data, N=512, loop=10):
     for i in range(loop):
         t0 = time.time()
         for i in range(N):
