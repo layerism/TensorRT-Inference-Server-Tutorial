@@ -29,7 +29,7 @@ def test_async_speed(runner, data, N=128, loop=10):
             input_id, results = runner.get_result(block=True)
 
         print("=====================")
-        print("FPS:          {:5d}".format(int(1.0 / ((time.time() - t0) / N))))
+        print("QPS:          {:5d}".format(int(1.0 / ((time.time() - t0) / N))))
         print("TIME/PER-IMG: {:5.3f}(ms)".format((time.time() - t0) / N * 1000.0))
 
 
@@ -39,7 +39,7 @@ def test_speed(runner, data, N=128, loop=10):
         for i in range(N):
             results = runner.run(input={"raw_image": data})
         print("=====================")
-        print("FPS:          {:5d}".format(int(1.0 / ((time.time() - t0) / N))))
+        print("QPS:          {:5d}".format(int(1.0 / ((time.time() - t0) / N))))
         print("TIME/PER-IMG: {:5.3f}(ms)".format((time.time() - t0) / N * 1000.0))
 
 

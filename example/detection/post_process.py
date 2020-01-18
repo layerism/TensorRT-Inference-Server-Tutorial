@@ -149,7 +149,7 @@ if __name__ == "__main__":
         model_file=None,
         inputs_def=inputs_def,
         outputs_def=outputs_def,
-        instances=4,
+        instances=16,
         gpus=[0, 1, 2, 3],
         version=1,
         export_path="../../model_repository"

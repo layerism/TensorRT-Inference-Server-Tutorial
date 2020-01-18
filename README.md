@@ -10,6 +10,13 @@
 
 本教程使用的是 DLA34 网络作为例子，模型文件需要自行训练获取 pth，然后放置到 ./example/detection/network 下面
 
+#### 效果评估
+
+如果在 p40 GPU 上部署，消耗时间最多的，是服务网络层面的通信，和把请求通过轮训方式发送到 GPU 上，本身模型计算是非常快的。
+
+1.  一张卡上启动 16 个实例，占用显存为 2G 左右，单个客户端做异步请求，能够到 100 左右 QPS
+2.  4 张卡，每张卡启动 16 个实例，单个客户端做异步请求，能够到 400 左右 QPS
+
 
 
 ## 前言
@@ -27,7 +34,9 @@ result = postprocess(nn_outputs, meta)
 本教程的实现路径如下：
 
 1.  前处理采取 tensorflow 编写，包括图像解析，resize，计算仿射变换矩阵，标准化等，保存成 tensorflow pd 文件 
-2.  神经网络部分是 torch，首先把 torch 的模型转换成 onnx，然后通过 onnx-simplifier 简化，接着交由 tensorRT 进行进一步优化，以及做 int8 量化。onnx-simplifier 的目的是为了更好地避免 onnx 到 tensorRT 的转换失败，但是，其并不能够百分百保证所有网络都能够被成功转换成 tensorRT，比如 torch 里面的 unsquezze 等 shape 层面的操作会有潜在问题，需要 model.py 里面改改。
+2.  神经网络部分是 torch，首先把 torch 的模型转换成 onnx，然后通过 onnx-simplifier 做进一步的简化，接着交由 tensorRT 进行进一步优化，以及做 int8 量化。
+    -   onnx-simplifier 的目的是为了更好地避免 onnx 到 tensorRT 的转换失败，但是，其并不能够百分百保证所有网络都能够被成功转换成 tensorRT，比如 torch 里面的 unsquezze 等 shape 层面的操作会有潜在问题，需要 model.py 里面改改。
+    -   onnx 有一定概率会掉性能点，这个原因暂时不明，onnx 解析 torch 的计算图时候，并不是一个算子对应一个 onnx 算子，这里面存在一些超参不一致等非常隐藏的问题。
 3.  后处理是 torch 编写，然后转成 onnx，靠 onnx runtime 调度
 4.  tensorRT 提供 ensemble 模式，可以联合调度 tensorflow 的 pd 文件，tensorRT plan 文件，onnx 格式文件，这样一来，可以把前处理，NN 计算，后处理都服务化，免除工程师搞复杂的编译工作和写 c++ 的工作，整个部署只需要写 python，特别通用高效，且没有竞争力
 
@@ -126,7 +135,7 @@ cd example/detection
 
 
 
-## python 客户端使用
+#### python 客户端使用
 
 单步调度举例：
 
@@ -168,4 +177,6 @@ for i in range(10):
 for i in range(10):
     input_id, results = runner.get(block=True)
 ```
+
+
 

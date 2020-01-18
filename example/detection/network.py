@@ -55,7 +55,7 @@ if __name__ == "__main__":
         model_file="./network/dla34.pth",
         inputs_def=inputs_def,
         outputs_def=outputs_def,
-        instances=4,
+        instances=16,
         gpus=[0, 1, 2, 3],
         version=1,
         export_path="../../model_repository",
@@ -68,8 +68,8 @@ if __name__ == "__main__":
     #     model_file="./network/dla34.pth",
     #     inputs_def=INPUT_DEF,
     #     outputs_def=OUTPUT_DEF,
-    #     instances=8,
-    #     gpus=[2, 3],
+    #     instances=16,
+    #     gpus=[2],
     #     version=1,
     #     export_path="../../model_repository"
     # )
