@@ -29,8 +29,6 @@ setup(
     platforms='any',
     install_requires=[
         "numpy>=1.16.0",
-        "opencv-python>=3.4.1",
-        "Pillow>=6.0.0",
         "protobuf>=3.8.0",
         "onnx>=1.6.0",
         "pycuda>=2018.1.2",

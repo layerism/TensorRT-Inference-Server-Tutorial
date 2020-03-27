@@ -8,7 +8,12 @@
 
 本教程使用的检测模型暂时不提供  model zoo，主要原因是官方 release 的 model 都带 DCN 模块，这个模块有 c++ 层面的库，作为初学者来说，部署起来非常不方便，大家可以根据 centernet 官方提供的代码，自行训练不带 DCN 的模型。
 
-本教程使用的是 DLA34 网络作为例子，模型文件需要自行训练获取 pth，然后放置到 ./example/detection/network 下面
+本教程使用的是 DLA34 网络作为例子，模型文件位置: 
+
+链接: https://pan.baidu.com/s/1gcC7qcBi68W0hzJO8IeB3w 提取码: rsut
+
+然后放置到 ./example/detection/network 下面
+
 
 #### 效果评估
 
@@ -58,12 +63,12 @@ result = postprocess(nn_outputs, meta)
 
 本教程的实现路径如下：
 
-1.  前处理采取 tensorflow 编写，包括图像解析，resize，计算仿射变换矩阵，标准化等，保存成 tensorflow pd 文件 
+1.  前处理采取 tensorflow 编写，包括图像解析，resize，计算仿射变换矩阵，标准化等，保存成 tensorflow pd 文件
 2.  神经网络部分是 torch，首先把 torch 的模型转换成 onnx，然后通过 onnx-simplifier 做进一步的简化，接着交由 tensorRT 进行进一步优化，以及做 int8 量化。
     -   onnx-simplifier 的目的是为了更好地避免 onnx 到 tensorRT 的转换失败，但是，其并不能够百分百保证所有网络都能够被成功转换成 tensorRT，比如 torch 里面的 unsquezze 等 shape 层面的操作会有潜在问题，需要 model.py 里面改改。
     -   onnx 有一定概率会掉性能点，这个原因暂时不明，onnx 解析 torch 的计算图时候，并不是一个算子对应一个 onnx 算子，这里面存在一些超参不一致等非常隐藏的问题。
 3.  后处理是 torch 编写，然后转成 onnx，靠 onnx runtime 调度
-4.  tensorRT 提供 ensemble 模式，可以联合调度 tensorflow 的 pd 文件，tensorRT plan 文件，onnx 格式文件，这样一来，可以把前处理，NN 计算，后处理都服务化，免除工程师搞复杂的编译工作和写 c++ 的工作，整个部署只需要写 python，特别通用高效，且没有竞争力
+4.  tensorRT Inference Server 提供 ensemble 模式，可以联合调度 tensorflow 的 pd 文件，tensorRT plan 文件，onnx 格式文件，这样一来，可以把前处理，NN 计算，后处理都服务化，免除工程师搞复杂的编译工作和写 c++ 的工作，整个部署只需要写 python，特别通用高效，且没有竞争力
 
 
 
@@ -73,7 +78,7 @@ result = postprocess(nn_outputs, meta)
 docker pull nvcr.io/nvidia/tensorrtserver:19.12-py3
 ```
 
-注意，这里面需要 nvidia 驱动版本大于 418 才行，Tesla 系列显卡可以稍微降低要求，cuda 版本要求是 10.1，详细配置参考：
+注意，这里面需要 nvidia 驱动版本大于 418 才行，cuda 版本要求是 10.1，详细配置参考：
 
 https://docs.nvidia.com/deeplearning/sdk/inference-release-notes/rel_19-12.html#rel_19-12
 
@@ -88,7 +93,7 @@ docker pull nvcr.io/nvidia/tensorrtserver:19.12-py3-clientsdk
 理论上来说，grpc 接口不依赖系统环境，没必要靠 docker 启动客户端，docker run 上述镜像以后，把 /workspace/install/python/tensorrtserver-1.9.0-py2.py3-none-linux_x86_64.whl 的安装文件取出来，直接在任意一台机器 pip install 便可
 
 ```sh
-# docker run --rm nvcr.io/nvidia/tensorrtserver:19.12-py3-clientsdk /bin/bash 
+# docker run --rm nvcr.io/nvidia/tensorrtserver:19.12-py3-clientsdk /bin/bash
 # copy `/workspace/install/python/tensorrtserver-1.9.0-py2.py3-none-linux_x86_64.whl` file to any linux machine
 # run the following commad
 pip install tensorrtserver-1.9.0-py2.py3-none-linux_x86_64.whl
@@ -100,7 +105,7 @@ pip install tensorrtserver-1.9.0-py2.py3-none-linux_x86_64.whl
 
 ## Inference Server Backend 安装
 
-安装各种 backend，用于生成如下转换格式： 
+安装各种 backend，用于生成如下转换格式：
 
 -   onnx=1.6.0
 -   tensorRT=6.0.1.5
@@ -131,7 +136,7 @@ cd client_py
 python setup.py install
 ```
 
-执行教程的 example，这个 example 会生成完整的 model_repository，剩下交给 tensorRT inference server 
+执行教程的 example，这个 example 会生成完整的 model_repository，剩下交给 tensorRT inference server
 
 ```sh
 cd example/detection
@@ -220,20 +225,17 @@ import numpy as np
 
 runner = client.Inference(
 	url="xx.xxx.xxx.xxx:7001", # grpc
-	model_name="detection",
-	model_version="1"
+ 	model_name="detection",
+ 	model_version="1"
 )
 
 for i in range(10):
-    raw_image = open("./{}.jpg".format(i), "rb").read()
+	raw_image = open("./{}.jpg".format(i), "rb").read()
 	raw_image = np.array([raw_image], dtype=bytes)
 	results = runner.async_run(
-        input={"raw_image": raw_image}, 
-        input_id="image_{}".format(i)
-   	)
+    	input={"raw_image": raw_image},
+    	input_id="image_{}".format(i)
+    )
 for i in range(10):
     input_id, results = runner.get(block=True)
 ```
-
-
-
